@@ -5,10 +5,10 @@ namespace Service.Analise
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
-        private readonly IRabbitMqService _rabbitMqService;
+        private readonly IMessageBusService _rabbitMqService;
 
 
-        public Worker(ILogger<Worker> logger, IRabbitMqService rabbitMqService)
+        public Worker(ILogger<Worker> logger, IMessageBusService rabbitMqService)
         {
             _logger = logger;
             _rabbitMqService = rabbitMqService;

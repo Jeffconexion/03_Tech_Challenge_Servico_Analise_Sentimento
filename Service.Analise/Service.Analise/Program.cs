@@ -20,7 +20,7 @@ var valor = configuration.GetValue<string>("ConnectionStrings:DefaultConnection"
 builder.Services.AddTransient<IDbConnection>((conexao) => new SqlConnection(valor));
 
 builder.Services.AddSingleton<IAnalyzeSentimentService, AnalyzeSentimentService>();
-builder.Services.AddSingleton<IRabbitMqService, RabbitMqService>();
+builder.Services.AddSingleton<IMessageBusService, MessageBusService>();
 builder.Services.AddSingleton<IAnalyzeRepository, AnalyzeRepository>();
 
 
