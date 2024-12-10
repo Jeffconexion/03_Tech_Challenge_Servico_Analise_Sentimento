@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using Service.Analise;
 using Service.Analise.Repository;
 using Service.Analise.Repository.Contracts;

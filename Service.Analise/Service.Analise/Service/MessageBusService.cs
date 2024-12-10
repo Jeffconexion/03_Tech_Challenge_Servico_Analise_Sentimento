@@ -19,9 +19,10 @@ namespace Service.Analise.Service
 
             _factory = new ConnectionFactory
             {
-                HostName = "localhost",
+                HostName = "rabbitmq",
                 UserName = "guest",
-                Password = "guest"
+                Password = "guest",
+                Port = 5672
             };
         }
 

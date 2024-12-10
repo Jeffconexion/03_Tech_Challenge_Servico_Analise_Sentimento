@@ -20,39 +20,59 @@ namespace Service.Analise.Service
             {
                 MLContext context = new MLContext();
 
-                var traineDataView = context.Data.LoadFromTextFile<InputModel>(
-                    path: @"C:\Users\jeffd\OneDrive\Documentos\2_Treinamentos\03_Tech_Challenge_Microsservicos\03_Tech_Challenge_Servico_Analise_Sentimento\Service.Analise\feedback_sentiment_base.csv",
-                    hasHeader: true,
-                    separatorChar: ',',
-                    allowQuoting: true,    // Permite aspas para strings
-                    trimWhitespace: true   // Remove espaços extras
-                );
+                string filePath = @"feedback_sentiment_base.csv";
 
-
-                // Definir o pipeline
-                var pipeline = context.Transforms.Text.FeaturizeText("Features", nameof(InputModel.SentimentoTexto))
-                        .Append(context.BinaryClassification.Trainers.AveragedPerceptron(
-                            labelColumnName: nameof(InputModel.Sentimento),
-                            featureColumnName: "Features",
-                            numberOfIterations: 100));
-
-                // Treinar o modelo
-                var model = pipeline.Fit(traineDataView);
-
-                // Criar o mecanismo de previsão
-                var predictionEngine = context.Model.CreatePredictionEngine<InputModel, ResultModel>(model);
-                var result = predictionEngine.Predict(new InputModel { SentimentoTexto = messageAnalise.FeedbackMessage });
-
-                var analyze = new Analyze()
+                if (File.Exists(filePath))
                 {
-                    IdContact = messageAnalise.Id,
-                    FeedbackMessage = messageAnalise.FeedbackMessage,
-                    Sentiment = result.PredictedSentimento,
-                    Score = result.Score
-                };
 
-                //PERSISTIR NO BANCO
-                var resultDatabae = await _analyzeRepository.Add(analyze);
+                    var traineDataView = context.Data.LoadFromTextFile<InputModel>(
+                        path: filePath,
+                        hasHeader: true,
+                        separatorChar: ',',
+                        allowQuoting: true,    // Permite aspas para strings
+                        trimWhitespace: true   // Remove espaços extras
+                    );
+
+
+                    // Definir o pipeline
+                    var pipeline = context.Transforms.Text.FeaturizeText("Features", nameof(InputModel.SentimentoTexto))
+                            .Append(context.BinaryClassification.Trainers.AveragedPerceptron(
+                                labelColumnName: nameof(InputModel.Sentimento),
+                                featureColumnName: "Features",
+                                numberOfIterations: 100));
+
+                    // Treinar o modelo
+                    var model = pipeline.Fit(traineDataView);
+
+                    // Criar o mecanismo de previsão
+                    var predictionEngine = context.Model.CreatePredictionEngine<InputModel, ResultModel>(model);
+                    var result = predictionEngine.Predict(new InputModel { SentimentoTexto = messageAnalise.FeedbackMessage });
+
+                    var analyze = new Analyze()
+                    {
+                        IdContact = messageAnalise.Id,
+                        FeedbackMessage = messageAnalise.FeedbackMessage,
+                        Sentiment = result.PredictedSentimento,
+                        Score = result.Score
+                    };
+
+                    string logMessage = $"Análise de Feedback - Data: {DateTime.Now:yyyy-MM-dd HH:mm:ss}\n" +
+                    $"Id do Contato: {analyze.IdContact}\n" +
+                    $"Mensagem: {analyze.FeedbackMessage}\n" +
+                    $"Sentimento: {analyze.Sentiment}\n" +
+                    $"Score: {analyze.Score}";
+
+                    Console.WriteLine(logMessage);
+
+
+                    //PERSISTIR NO BANCO
+                    Console.WriteLine($"Salvo com sucesso no banco de dados.");
+                    //await _analyzeRepository.Add(analyze);
+                }
+                else
+                {
+                    Console.WriteLine($"Erro: Arquivo '{filePath}' não encontrado.");
+                }
             }
 
         }

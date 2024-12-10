@@ -1,0 +1,21 @@
+version: '3.4'
+
+networks:
+  app_net:
+    driver: bridge
+    name: app_net
+
+services:
+  service.analise:
+    image: ${DOCKER_REGISTRY-}service.analise
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - "./Service.Analise/feedback_sentiment_base.csv:/app/feedback_sentiment_base.csv"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - RabbitMQ_HOST=rabbitmq 
+      - RabbitMQ_PORT=5672
+    networks:
+      - app_net
