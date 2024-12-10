@@ -1,0 +1,76 @@
+# Workflow para build, testes unitários e verificação de segurança do projeto Service.Analise.
+# Este workflow é acionado em pushs e pull requests na branch 'master'.
+
+name: Notificacao Workflow
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+
+jobs:
+  validation_security:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      # Passo 1: Checkout do repositório para acessar o código fonte
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Passo 2: Instala o Trivy, uma ferramenta de verificação de vulnerabilidades
+      - name: Install Trivy
+        run: |
+          sudo apt-get update
+          sudo apt-get install wget apt-transport-https gnupg lsb-release -y
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install trivy -y
+
+      # Passo 3: Executa a verificação de vulnerabilidades nos arquivos do projeto
+      - name: Run Trivy Security Scan
+        run: trivy fs --exit-code 0 --no-progress --severity MEDIUM,HIGH,CRITICAL .
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Passo 1: Faz o checkout do repositório para acessar o código fonte
+      - name: Step 1 Checkout Repository
+        uses: actions/checkout@v4
+
+      # Passo 2: Configura o ambiente .NET com a versão especificada
+      - name: Step 2 Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      # Passo 3: Restaura dependências necessárias para o projeto Service.Analise
+      - name: Step 3 Restore Dependencies
+        run: dotnet restore ./Service.Analise/Service.Analise.sln
+
+      # Passo 4: Constrói o projeto Service.Analise
+      - name: Step 4 Build Project
+        run: dotnet build ./Service.Analise/Service.Analise.sln --no-restore
+
+      # Passo 5: Executa a análise estática de código usando StyleCop para garantir padrões de codificação
+      - name: Step 5 Run StyleCop Analysis
+        run: dotnet build ./Service.Analise/Service.Analise.sln --no-restore
+
+  tests:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      # Passo 1: Checkout do repositório para acessar o código fonte
+      - name: Step 1 Checkout Repository
+        uses: actions/checkout@v4
+
+      # Passo 2: Configura o ambiente .NET com a versão especificada
+      - name: Step 2 Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      # Passo 3: Executa os testes unitários para validar o comportamento do código
+      - name: Step 3 Run Tests
+        run: dotnet test ./Service.Analise/Service.Analise.sln --verbosity normal

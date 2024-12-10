@@ -14,9 +14,9 @@ namespace Service.Analise.Service
             _analyzeRepository = analyzeRepository;
         }
 
-        public async Task ProcessAnalyze(Feedback messageNotification)
+        public async Task ProcessAnalyze(Feedback messageAnalise)
         {
-            if (!string.IsNullOrEmpty(messageNotification.Message))
+            if (!string.IsNullOrEmpty(messageAnalise.Message))
             {
                 MLContext context = new MLContext();
 
@@ -41,12 +41,12 @@ namespace Service.Analise.Service
 
                 // Criar o mecanismo de previsão
                 var predictionEngine = context.Model.CreatePredictionEngine<InputModel, ResultModel>(model);
-                var result = predictionEngine.Predict(new InputModel { SentimentoTexto = messageNotification.FeedbackMessage });
+                var result = predictionEngine.Predict(new InputModel { SentimentoTexto = messageAnalise.FeedbackMessage });
 
                 var analyze = new Analyze()
                 {
-                    IdContact = messageNotification.Id,
-                    FeedbackMessage = messageNotification.FeedbackMessage,
+                    IdContact = messageAnalise.Id,
+                    FeedbackMessage = messageAnalise.FeedbackMessage,
                     Sentiment = result.PredictedSentimento,
                     Score = result.Score
                 };

@@ -4,6 +4,6 @@ namespace Service.Analise.Service.Contracts
 {
     public interface IAnalyzeSentimentService
     {
-        Task ProcessAnalyze(Feedback messageNotification);
+        Task ProcessAnalyze(Feedback messageAnalise);
     }
 }
